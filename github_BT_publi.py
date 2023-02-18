@@ -64,9 +64,9 @@ import warnings
 warnings.filterwarnings("ignore")
 
 #Import datasets
-full = pd.read_csv('EDA_175.csv', sep=';', index_col='Patient') 
+full = pd.read_csv('train_data.csv', sep=';', index_col='Patient') 
 print(full.shape)
-externe = pd.read_csv("cohorte_externe_temp.csv", sep=';', index_col='Patient') 
+externe = pd.read_csv("tst_data.csv", sep=';', index_col='Patient') 
 print(externe.shape)
 
 
