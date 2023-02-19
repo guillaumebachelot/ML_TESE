@@ -129,27 +129,28 @@ for model in liste_models:
     svc_disp = plot_roc_curve(model, X_ext_3, y_ext)
     plt.show()    
 
-#Internal LOO CV (example)
-cv = LeaveOneOut()
-X_full_3_values = X_full_3.values
-y_true, y_pred, y_prob = list(), list(), list()
-for train_ix, test_ix in cv.split(X_full_3_values):
-    X_train1, X_test1 = X_full_3_values[train_ix, :], X_full_3_values[test_ix, :]
-    y_train1, y_test1 = y_full.iloc[train_ix], y_full.iloc[test_ix]
-    model = KNeighborsClassifier()
-    model.fit(X_train1, y_train1)
-    yhat = model.predict(X_test1)
-    yprob = model.predict_proba(X_test1)[:, 1]
-    y_true.append(y_test1.iloc[0])
-    y_pred.append(yhat[0])
-    y_prob.append(yprob[0])
-acc = accuracy_score(y_true, y_pred)
-print('Accuracy: %.3f' % acc)
-print(classification_report(y_true, y_pred))
-print('Sensibilité est de : %.3f' % sensitivity_score(y_true, y_pred), '\n')
-print('Spécifité est de : %.3f' % specificity_score(y_true, y_pred), '\n')
-print(roc_auc_score(y_true, y_prob))
-
+#Internal CV (example)
+from sklearn.model_selection import RepeatedKFold
+from numpy import mean
+from numpy import std
+from sklearn.neural_network import MLPClassifier
+cv = RepeatedKFold(n_splits=5, n_repeats=10, random_state=1)
+from sklearn.metrics import recall_score, make_scorer
+liste_models = [LogisticRegression(solver='liblinear'), 
+                GaussianNB(), 
+                RandomForestClassifier(random_state=1234), 
+                GradientBoostingClassifier(random_state=1234, subsample=0.8, max_features='auto'), 
+                XGBClassifier(random_state=1234), 
+                SVC(probability=True),
+               KNeighborsClassifier()]
+for model in liste_models:
+    # evaluate model
+    scores = cross_val_score(model, X_full_3, y_full, scoring='recall', cv=cv, n_jobs=-1)
+    # report performance
+    print('--------------------------------------------------------------------------------------')
+    print(model)
+    print('Accuracy: %.3f (%.3f)' % (mean(scores), std(scores)))
+    print('--------------------------------------------------------------------------------------')
 #optimizing / Randomizedsearch (example)
 skf = StratifiedKFold(n_splits=5, random_state=1234, shuffle=True)
 gbt_model = GradientBoostingClassifier(random_state=1234, subsample=0.8, max_features='auto')
